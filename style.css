@@ -1,3 +1,4 @@
+
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -16,10 +17,11 @@ input, button {
     box-sizing: border-box;
 }
 button:active {
-    opacity: 0.6; /* Button color fades when clicked */
+    opacity: 0.6; 
 }
 #output {
     margin-top: 20px;
+    white-space: pre-wrap; 
 }
 footer {
     margin: 0px auto;
