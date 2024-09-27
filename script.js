@@ -1,73 +1,36 @@
-const apiUrl = 'https://api.cloudflare.com/client/v4/user/tokens/verify';
-const apiKey = 'Midq_5u_Ri1sK6pe98nrsrdDIK1qVjSk60mSijYm';
+const apiUrl = 'https://api.cloudflare.com/client/v4/accounts/6fde9a1f0ee677ef0fba8b98e94f8ef8/ai/run/@cf/meta/llama-3-8b-instruct'; // Replace with your Worker's URL
+const apiKey = 'OehHRtOy1QFWnxtpRHc1G7kOUWi7obw5OULDS1B1'; // Replace with your actual API key
 
 document.getElementById('apiForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
     const promptValue = document.getElementById('prompt').value;
 
-    const data = { 
-        prompt: promptValue, 
-    };
-
     const outputElement = document.getElementById('output');
-    outputElement.innerText = ''; // Clear previous output
+    outputElement.innerText = ''; 
 
     fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': Bearer ${apiKey}, // Include API key in headers
+            'Authorization': `Bearer ${apiKey}` 
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ 
+            prompt: promptValue 
+        })
     })
     .then(response => {
         if (!response.ok) {
             console.error('Response details:', response.status, response.statusText);
             throw new Error(`Network response was not ok (${response.status} ${response.statusText})`);
         }
-
-        // Read the response as a stream (assuming your worker returns a stream)
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let buffer = '';
-
-        function processStream({ done, value }) {
-            if (done) {
-                console.log('Stream complete');
-                return;
-            }
-
-            const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk;
-
-            const lines = buffer.split('\n');
-
-            for (let i = 0; i < lines.length - 1; i++) {
-                const line = lines[i].trim();
-
-                if (line.startsWith('data:')) {
-                    const jsonString = line.slice(5).trim();
-                    try {
-                        const jsonData = JSON.parse(jsonString);
-                        if (jsonData.response) {
-                            outputElement.innerText += jsonData.response; 
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse JSON:', e);
-                    }
-                }
-            }
-
-            buffer = lines[lines.length - 1];
-
-            return reader.read().then(processStream);
-        }
-
-        return reader.read().then(processStream);
+        return response.json(); 
+    })
+    .then(data => {
+        outputElement.innerText = data.response; 
     })
     .catch(error => {
         console.error('API Error:', error);
-        outputElement.innerText = 'Error: ' + error.message;
+        outputElement.innerText = 'Error: ' + error.message; 
     });
 });
